@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phone Bill Autograder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1F0EB; --card:#FBFAF6; --ink:#1C1C1C; --muted:#5A5955; --yellow:#FFDD3C;
+    --pass:#1F7A3E; --fail:#B3261E; --shadow:5px 5px 0 #1C1C1C;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:Nunito,Arial,sans-serif;font-size:18px;line-height:1.45}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 16px 64px}
+  h1,h2,.chewy{font-family:Chewy,'Trebuchet MS',cursive;font-weight:400;letter-spacing:.5px}
+  h1{font-size:clamp(40px,7vw,72px);line-height:1;margin:0;transform:rotate(-2deg);transform-origin:left}
+  h2{font-size:32px;margin:0 0 12px}
+  .hand{font-family:Caveat,'Brush Script MT',cursive;font-size:28px}
+  .muted{color:var(--muted)}
+  .card{background:var(--card);border:3px solid var(--ink);border-radius:22px;box-shadow:var(--shadow);padding:22px;margin-top:24px}
+  .dark{background:var(--ink);color:var(--paper)}
+  .dark .muted{color:#C9C6BE}
+  .hl{background:var(--yellow);border:3px solid var(--ink);border-radius:6px 16px 8px 14px;padding:4px 12px;font-weight:800;display:inline-block;transform:rotate(-1deg)}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .badge{display:inline-block;background:var(--ink);color:var(--paper);border-radius:12px;padding:2px 12px;font-family:Chewy,cursive;font-size:20px}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+  .step{background:var(--card);border:3px solid var(--ink);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+  .step.dark{background:var(--ink)}
+  .step b{display:block;font-family:Chewy,cursive;font-weight:400;font-size:24px;margin:6px 0 4px}
+  .grid2{display:grid;grid-template-columns:1.2fr 1fr;gap:24px}
+  code,.code{font-family:'Courier New',monospace}
+  .code{background:var(--ink);color:var(--paper);border-radius:14px;padding:14px 16px;white-space:pre;overflow-x:auto;font-size:17px;margin:10px 0 0}
+  label{font-weight:800}
+  .formula{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;font-family:'Courier New',monospace;font-size:20px;font-weight:700}
+  input[type=text]{flex:1;min-width:220px;font:inherit;padding:12px 14px;border:3px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink)}
+  button{font-family:Nunito,Arial,sans-serif;font-weight:800;font-size:17px;border:3px solid var(--ink);border-radius:14px;padding:10px 16px;cursor:pointer;background:var(--card);color:var(--ink);box-shadow:3px 3px 0 var(--ink);transition:transform .1s, box-shadow .1s}
+  button:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+  button.go{background:var(--yellow);font-size:20px}
+  .presets{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .error{color:var(--fail);font-weight:800;margin-top:10px;min-height:1.4em}
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:17px}
+  th,td{border:2px solid var(--ink);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--ink);color:var(--paper)}
+  td.num{font-family:'Courier New',monospace;font-weight:700;white-space:nowrap}
+  tr.row{opacity:0;transform:translateY(10px)}
+  tr.row.show{opacity:1;transform:none;transition:opacity .35s, transform .35s}
+  .pass{color:var(--pass);font-weight:800}
+  .fail{color:var(--fail);font-weight:800}
+  .score{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:16px}
+  .stamp{font-family:Chewy,cursive;font-size:56px;line-height:1;padding:6px 18px;border:4px solid var(--ink);border-radius:16px;background:var(--card);transform:scale(0) rotate(-12deg)}
+  .stamp.show{transform:scale(1) rotate(-6deg);transition:transform .45s cubic-bezier(.3,1.6,.5,1)}
+  .stamp.full{background:var(--yellow)}
+  .next{font-weight:800}
+  .status{display:flex;align-items:center;gap:14px;margin-top:8px}
+  .dot{width:22px;height:22px;border-radius:50%;flex:none;border:3px solid var(--paper)}
+  .dot.run{background:#E3B341;animation:pulse 1s infinite}
+  .dot.ok{background:#3FB950}
+  .dot.bad{background:#F85149}
+  .dot.none{background:#8A877F}
+  @keyframes pulse{50%{opacity:.35}}
+  .dark a{color:var(--yellow)}
+  a{color:var(--ink);font-weight:800}
+  #qr{background:#fff;padding:10px;border-radius:12px;display:inline-block;margin-top:10px;border:3px solid var(--ink)}
+  #qr img,#qr canvas{display:block;width:180px;height:180px}
+  .url{font-family:'Courier New',monospace;font-weight:700;word-break:break-all;margin-top:8px}
+  footer{margin-top:32px;font-size:15px}
+  .cat .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+  .cat .tail{transform-box:fill-box;transform-origin:0% 100%;animation:wag 1.4s ease-in-out infinite}
+  @keyframes blink{0%,90%,100%{transform:scaleY(1)}94%{transform:scaleY(.08)}}
+  @keyframes wag{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(16deg)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  @media (max-width:760px){
+    .steps,.grid2{grid-template-columns:1fr}
+    th:nth-child(3),td:nth-child(3){display:none}
+    table{font-size:15px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <p class="muted" style="margin:0 0 8px;font-weight:800;letter-spacing:1px">PED 509 · AUTOMATED SCORING &amp; FEEDBACK</p>
+    <h1>Phone Bill Autograder</h1>
+    <p class="hand" style="margin:10px 0 0">Type a formula, get a score and feedback in one second.</p>
+  </div>
+  <svg class="cat" width="150" height="180" viewBox="0 0 300 360" aria-hidden="true">
+    <path class="tail" d="M252 330 C318 318 318 228 280 212" fill="none" stroke="#1C1C1C" stroke-width="20" stroke-linecap="round"/>
+    <path d="M48 360 C32 262 70 200 150 200 C230 200 268 262 252 360 Z" fill="#1C1C1C"/>
+    <path d="M70 118 L76 26 L134 76 Z" fill="#1C1C1C"/><path d="M230 118 L224 26 L166 76 Z" fill="#1C1C1C"/>
+    <ellipse cx="150" cy="136" rx="98" ry="82" fill="#1C1C1C"/>
+    <g class="eye"><circle cx="112" cy="132" r="30" fill="#FBFAF6"/><ellipse cx="116" cy="134" rx="7" ry="14" fill="#1C1C1C"/></g>
+    <g class="eye"><circle cx="188" cy="132" r="30" fill="#FBFAF6"/><ellipse cx="192" cy="134" rx="7" ry="14" fill="#1C1C1C"/></g>
+    <path d="M138 176 l12 9 l12 -9" fill="none" stroke="#FBFAF6" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+</header>
+
+<section class="steps" aria-label="How this was built">
+  <div class="step"><span class="badge">01</span><b>Code on GitHub</b><span class="muted">The task, the tests and this website live in one GitHub repository.</span></div>
+  <div class="step dark"><span class="badge" style="background:var(--yellow);color:var(--ink)">02</span><b>Checked by GitHub Actions</b><span class="muted">Every commit runs the autograder in the cloud.</span></div>
+  <div class="step"><span class="badge">03</span><b>Published by GitHub Pages</b><span class="muted">GitHub hosts this page for free, so anyone can try it.</span></div>
+</section>
+
+<div class="grid2">
+  <section class="card">
+    <h2>The task</h2>
+    <p style="margin:0">Aliya’s phone plan costs <b>2 000 ₸ a month</b> plus <b>15 ₸ for every minute</b>. Write a formula for her bill.</p>
+
+    <label for="f" style="display:block;margin-top:18px">Your formula</label>
+    <div class="formula"><span>bill(minutes) =</span><input id="f" type="text" value="15 * minutes" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="err"></div>
+    <p class="muted" style="font-size:15px;margin:6px 0 0">Use numbers, <code>minutes</code> and + − * / ( ). Example: <code>100 + 2 * minutes</code></p>
+    <div style="margin-top:14px"><button class="go" id="check">Check my answer</button></div>
+    <div class="error" id="err" role="alert"></div>
+
+    <p style="margin:18px 0 0;font-weight:800">Or try the demo versions:</p>
+    <div class="presets">
+      <button data-v="1">v1 · forgot the fee</button>
+      <button data-v="2">v2 · hard-coded 3 800</button>
+      <button data-v="3">v3 · correct</button>
+    </div>
+    <div class="code" id="codebox" aria-label="Code being checked">def bill(minutes):
+    return 15 * minutes</div>
+  </section>
+
+  <section class="card dark">
+    <h2>Live from GitHub Actions</h2>
+    <p class="muted" style="margin:0">The latest autograder run in the repository:</p>
+    <div class="status"><span class="dot none" id="dot"></span><div><div id="runTitle" style="font-weight:800">Loading…</div><div class="muted" id="runMeta" style="font-size:15px"></div></div></div>
+    <p style="margin:14px 0 0"><button id="refresh" style="background:var(--paper)">Refresh</button> <a id="runLink" href="#" target="_blank" rel="noopener" style="margin-left:8px">Open on GitHub</a></p>
+    <hr style="border:none;border-top:2px dashed #5A5955;margin:20px 0">
+    <h2 style="font-size:26px">Try it on your phone</h2>
+    <div id="qr" aria-label="QR code for this page"></div>
+    <div class="url" id="url"></div>
+  </section>
+</div>
+
+<section class="card" aria-live="polite">
+  <h2>Result</h2>
+  <p class="muted" id="hint" style="margin:0">Press “Check my answer” to run the 4 checks.</p>
+  <table id="tbl" hidden>
+    <thead><tr><th>Check</th><th>Your answer</th><th>Expected</th><th>Result</th><th>Feedback</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="score" id="scoreBox" hidden>
+    <div class="stamp" id="stamp">0/4</div>
+    <div id="next"></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>What this shows about automated scoring</h2>
+  <p style="margin:0 0 10px">Each check is a question with an answer key. Each failed check gives feedback the teacher wrote <b>once</b>, and every student with that mistake gets it instantly.</p>
+  <p style="margin:0"><span class="hl">Version 2 passes Aliya’s case but fails the others: more test cases make the machine harder to fool.</span></p>
+</section>
+
+<footer class="muted">
+  Made for a PED 509 presentation. Same checks as <code>grade.py</code> in the repository. <a id="repoLink" href="#" target="_blank" rel="noopener">View the code on GitHub</a>.
+</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// ---- Repository settings: detected from the GitHub Pages address, with a fallback ----
+var OWNER = 'mirrorsilence', REPO = 'phone-bill-autograde';
+(function(){
+  var h = location.hostname, m = h.match(/^([^.]+)\.github\.io$/i);
+  if (m) {
+    OWNER = m[1];
+    var seg = location.pathname.split('/').filter(Boolean)[0];
+    if (seg && !/\.html?$/i.test(seg)) REPO = seg;
+  }
+})();
+var REPO_URL = 'https://github.com/' + OWNER + '/' + REPO;
+document.getElementById('repoLink').href = REPO_URL;
+document.getElementById('runLink').href = REPO_URL + '/actions';
+
+// ---- The same 4 checks as grade.py ----
+var CHECKS = [
+  [0, 2000, 'With 0 minutes the bill must be just the monthly fee, 2 000 tenge. Did you forget to add the fee?'],
+  [1, 2015, 'One minute should cost 15 tenge on top of the fee (2 000 + 15 = 2 015). Check the price per minute.'],
+  [120, 3800, 'Aliya’s case: 2 000 + 15 × 120 should be 3 800. Multiply the minutes by 15, then add the fee.'],
+  [500, 9500, 'A long month: 2 000 + 15 × 500 should be 9 500. Does your formula work for any number?']
+];
+
+var VERSIONS = {
+  1: { code: 'def bill(minutes):\n    return 15 * minutes', fn: function(m){ return 15 * m; }, formula: '15 * minutes' },
+  2: { code: 'def bill(minutes):\n    if minutes == 120:\n        return 3800\n    return 2000', fn: function(m){ return m === 120 ? 3800 : 2000; }, formula: null },
+  3: { code: 'def bill(minutes):\n    return 2000 + 15 * minutes', fn: function(m){ return 2000 + 15 * m; }, formula: '2000 + 15 * minutes' }
+};
+
+var input = document.getElementById('f'), err = document.getElementById('err');
+
+function parseFormula(text){
+  var s = text.trim().replace(/^return\s+/i, '').replace(/[×x](?=\s*\d|\s*\()/g, '*').replace(/[×]/g, '*').replace(/−/g, '-');
+  s = s.replace(/(\d)[\s ]+(?=\d)/g, '$1');           // "2 000" -> "2000"
+  if (!s) throw new Error('Type a formula first.');
+  var rest = s.replace(/\bminutes\b|\bm\b/g, '');
+  if (!/^[0-9+\-*/().\s]*$/.test(rest)) throw new Error('Use only numbers, minutes and + - * / ( ).');
+  var expr = s.replace(/\bminutes\b|\bm\b/g, '(M)');
+  var fn;
+  try { fn = new Function('M', '"use strict"; return (' + expr + ');'); fn(1); }
+  catch (e) { throw new Error('This formula has a typo. Check the brackets and signs (use * to multiply).'); }
+  return fn;
+}
+
+function fmt(n){ return (typeof n === 'number' && isFinite(n)) ? String(Math.round(n * 100) / 100) : String(n); }
+
+function grade(fn){
+  var rows = document.getElementById('rows'), tbl = document.getElementById('tbl');
+  var box = document.getElementById('scoreBox'), stamp = document.getElementById('stamp'), next = document.getElementById('next');
+  rows.innerHTML = ''; tbl.hidden = false; box.hidden = true; stamp.classList.remove('show', 'full');
+  document.getElementById('hint').textContent = 'Running 4 checks…';
+  var passed = 0;
+  CHECKS.forEach(function(c, i){
+    var got; try { got = fn(c[0]); } catch (e) { got = 'error'; }
+    var ok = Math.abs(Number(got) - c[1]) < 1e-9;
+    if (ok) passed++;
+    var tr = document.createElement('tr'); tr.className = 'row';
+    tr.innerHTML = '<td class="num">bill(' + c[0] + ')</td><td class="num">' + fmt(got) + '</td><td class="num">' + c[1] +
+      '</td><td class="' + (ok ? 'pass">✓ pass' : 'fail">✗ fail') + '</td><td>' + (ok ? '' : c[2]) + '</td>';
+    rows.appendChild(tr);
+    setTimeout(function(){ tr.classList.add('show'); }, 250 * (i + 1));
+  });
+  setTimeout(function(){
+    document.getElementById('hint').textContent = passed === 4 ? 'All checks passed.' : 'Read the feedback on each red row, fix your formula and check again.';
+    box.hidden = false; stamp.textContent = passed + '/4';
+    if (passed === 4) stamp.classList.add('full');
+    requestAnimationFrame(function(){ stamp.classList.add('show'); });
+    next.innerHTML = passed === 4
+      ? '<span class="hl">Next step: what should happen if minutes is negative?</span>'
+      : '<span class="next">' + (4 - passed) + ' check' + (4 - passed === 1 ? '' : 's') + ' to fix.</span>';
+  }, 250 * (CHECKS.length + 1));
+}
+
+document.getElementById('check').addEventListener('click', function(){
+  err.textContent = '';
+  try {
+    var fn = parseFormula(input.value);
+    document.getElementById('codebox').textContent = 'def bill(minutes):\n    return ' + input.value.trim().replace(/^return\s+/i, '');
+    grade(fn);
+  } catch (e) { err.textContent = e.message; }
+});
+input.addEventListener('keydown', function(e){ if (e.key === 'Enter') document.getElementById('check').click(); });
+
+document.querySelectorAll('[data-v]').forEach(function(b){
+  b.addEventListener('click', function(){
+    var v = VERSIONS[b.getAttribute('data-v')];
+    err.textContent = '';
+    document.getElementById('codebox').textContent = v.code;
+    if (v.formula) input.value = v.formula;
+    grade(v.fn);
+  });
+});
+
+// ---- Live status of the latest GitHub Actions run (public API, no login) ----
+function ago(iso){
+  var s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return Math.round(s) + ' s ago';
+  if (s < 3600) return Math.round(s / 60) + ' min ago';
+  if (s < 86400) return Math.round(s / 3600) + ' h ago';
+  return Math.round(s / 86400) + ' days ago';
+}
+function loadRun(){
+  var dot = document.getElementById('dot'), title = document.getElementById('runTitle'), meta = document.getElementById('runMeta');
+  fetch('https://api.github.com/repos/' + OWNER + '/' + REPO + '/actions/runs?per_page=1')
+    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(d){
+      var run = d.workflow_runs && d.workflow_runs[0];
+      if (!run) { dot.className = 'dot none'; title.textContent = 'No runs yet'; meta.textContent = ''; return; }
+      if (run.status !== 'completed') { dot.className = 'dot run'; title.textContent = 'Checking the new commit…'; }
+      else if (run.conclusion === 'success') { dot.className = 'dot ok'; title.textContent = '✓ All checks passed'; }
+      else { dot.className = 'dot bad'; title.textContent = '✗ Some checks failed'; }
+      var msg = (run.head_commit && run.head_commit.message || run.display_title || '').split('\n')[0];
+      meta.textContent = '“' + msg + '” · ' + ago(run.created_at);
+      document.getElementById('runLink').href = run.html_url;
+    })
+    .catch(function(){
+      dot.className = 'dot none'; title.textContent = 'Could not reach GitHub right now';
+      meta.textContent = 'Use the “Open on GitHub” link instead.';
+    });
+}
+document.getElementById('refresh').addEventListener('click', loadRun);
+loadRun();
+setInterval(loadRun, 90000);
+
+// ---- QR code for the audience ----
+document.getElementById('url').textContent = location.href.replace(/^https?:\/\//, '');
+try { new QRCode(document.getElementById('qr'), { text: location.href, width: 180, height: 180 }); }
+catch (e) { document.getElementById('qr').hidden = true; }
+</script>
+</body>
+</html>
